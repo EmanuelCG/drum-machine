@@ -1,4 +1,4 @@
-import { BsSoundwave } from "react-icons/bs";
+import { BsSoundwave, BsWindowSidebar } from "react-icons/bs";
 import { HiAdjustments } from "react-icons/hi";
 import CevH2 from '../assets/audios/Cev_H2.mp3'
 import DscOh from '../assets/audios/Dsc_Oh.mp3'
@@ -9,20 +9,14 @@ import Heater4 from '../assets/audios/Heater-4.mp3'
 import Heater6 from '../assets/audios/Heater-6.mp3'
 import KickHat from '../assets/audios/Kick_n_Hat.mp3'
 import Rp4Kick from '../assets/audios/RP4_KICK.mp3'
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+
 
 function DrumMachine() {
 
     const [sound, setSound] = useState(null)
-    const [power, setPower] = useState(false)
-
-    useEffect(() => {
-        console.log(power)
-
-    }, [power])
-
-    const audioRefs = useRef({});
-
+    const [power, setPower] = useState(true)
     const DataSound = [
         { name: 'Q', sound: CevH2, value: 'CevH2' },
         { name: 'W', sound: DscOh, value: 'DscOh' },
@@ -35,11 +29,32 @@ function DrumMachine() {
         { name: 'C', sound: Rp4Kick, value: 'Rp4Kick' }
     ];
 
+    useEffect(() => {
+        const handleKeyPress = () => {
+            const key = event.key.toUpperCase()
+            const soundData = DataSound.find(data => data.name === key)
+            if (soundData && power) {
+                handleOnClick(soundData)
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyPress)
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress)
+        }
+
+    })
+
+    const audioRefs = useRef({});
+
+
+
     const handleSwitchChange = (e) => {
         setPower(e.target.checked)
     }
 
-    const handleOnClick = (data) => {
+    const handleOnClick = useCallback((data) => {
         const audio = audioRefs.current[data.name]
         setSound(data.value)
         if (audio) {
@@ -48,23 +63,23 @@ function DrumMachine() {
                 audio.play()
             }
         }
-    }
+    }, [power])
 
 
     return (
-        <div className="flex flex-col items-center justify-center w-screen h-screen" id="drum - machine">
+        <div className="flex flex-col items-center justify-center w-screen h-screen" id="drum-machine">
             <BsSoundwave className="text-white absolute top-[10%] left-[44%] hover:text-[#bbff33] transition-all duration-300 w-[150px] h-[150px]" />
             <h1 className="text-6xl mb-8 text-white font-black text-pretty tracking-wide italic hover:text-[#bbff33] transition-all duration-300" > DRUM MACHINE</h1 >
-            <div className="relative w-[750px] h-[400px] bg-[#252422] flex items-center justify-between py-2 px-8 rounded-2xl shadow-2xl">
+            <div className="relative w-[750px] h-[400px] bg-[#252422] flex items-center justify-between py-2 px-8 rounded-2xl shadow-2xl" id="display">
                 <BsSoundwave className="text-white absolute top-[40%] left-[48%]" size={30} />
                 <div className="w-[300px] h-[300px] bg-[#434343] grid grid-cols-3 gap-2 p-2 rounded-lg">
 
                     {
                         DataSound.map((data) => (
-                            <button key={data.name} className="w-[86px] h-[86px] bg-black/30 rounded-lg border-black/20 border-2 hover:bg-white hover:border-black transition-all duration-200 active:bg-[#bbff33] text-white hover:text-black font-semibold text-3xl" value={data.name} onClick={() => handleOnClick(data)}>{data.name}
+                            <button key={data.name} id={data.name} className="drum-pad w-[86px] h-[86px] bg-black/30 rounded-lg border-black/20 border-2 hover:bg-white hover:border-black transition-all duration-200 active:bg-[#bbff33] text-white hover:text-black font-semibold text-3xl" value={data.name} onClick={() => handleOnClick(data)}>{data.name}
                                 <audio
                                     ref={el => (audioRefs.current[data.name] = el)}
-                                    src={data.sound} preload="auto"></audio>
+                                    src={data.sound} preload="auto" className="clip" id={data.name}></audio>
                             </button>
 
                         ))
